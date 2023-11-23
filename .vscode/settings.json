@@ -1,7 +1,10 @@
 {
     "cSpell.words": [
+        "FGCOLOR",
         "Hbox",
         "Icallback",
-        "Ihandle"
-    ]
+        "Ihandle",
+        "Messagef"
+    ],
+    "C_Cpp.errorSquiggles": "enabled"
 }
