@@ -1,10 +1,9 @@
 {
+    "C_Cpp.errorSquiggles": "enabled",
     "cSpell.words": [
-        "FGCOLOR",
-        "Hbox",
-        "Icallback",
-        "Ihandle",
-        "Messagef"
-    ],
-    "C_Cpp.errorSquiggles": "enabled"
+        "gchar",
+        "gint",
+        "gpointer",
+        "halign"
+    ]
 }

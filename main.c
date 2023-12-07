@@ -1,84 +1,69 @@
-#include "global-iup.h"
 
-// functions
-int on_select_login_option(Ihandle *self, char *text, int item, int state);
-int on_submit(Ihandle *self);
-Ihandle *create_launch_window();
+#include <gtk/gtk.h>
+#include <string.h>
 
-// static global variables
-int selected_option = 0;
-Ihandle *launch_window;
+GtkWidget *stack;
+int login_as;
+char login_username[100];
+char login_password[100];
+
+#include "headers/login.h"
+#include "headers/admin.h"
+#include "headers/student.h"
+#include "headers/teacher.h"
+
+static void activate(GtkApplication *app, gpointer user_data);
 
 int main(int argc, char **argv)
 {
-    IupOpen(&argc, &argv);
+    GtkApplication *app;
+    int status;
 
-    launch_window = create_launch_window();
+    app = gtk_application_new("org.closers.project1", G_APPLICATION_DEFAULT_FLAGS);
+    g_signal_connect(app, "activate", G_CALLBACK(activate), NULL);
+    status = g_application_run(G_APPLICATION(app), argc, argv);
+    g_object_unref(app);
 
-    IupShowXY(launch_window, IUP_CENTER, IUP_CENTER);
-
-    IupMainLoop();
-    IupClose();
-
-    return EXIT_SUCCESS;
+    return status;
 }
 
-int on_select_login_option(Ihandle *self, char *text, int item, int state)
+static void activate(GtkApplication *app, gpointer user_data)
 {
-    if (state == 1)
-    {
-        selected_option = item;
-    }
-    return IUP_DEFAULT;
-}
+    GtkWidget *window, *scroll_window, *login_page, *admin_launch_page, *student_launch_page, *teacher_launch_page;
 
-int on_submit(Ihandle *self)
-{
-    if (0)
-        IupMessagef("Error", "Pass not right", "");
-    else
-    {
-        // system("dir");
-        system("student_window.exe \"id id\" \"pass pass\"");
-        IupHide(launch_window);
-        return IUP_CLOSE;
-    }
-}
+    // styling
+    // GtkCssProvider *css_all = gtk_css_provider_new();
+    // gtk_css_provider_load_from_path(css_all, "style.css");
+    // gtk_style_context_add_provider_for_display(gdk_display_get_default(), GTK_STYLE_PROVIDER(css_all), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 
-Ihandle *create_launch_window()
-{
-    Ihandle *launch_window,
-        *user_id = IupText(""),
-        *user_passwd = IupText(""),
-        *container,
-        *login_option = IupList(NULL),
-        *submit = IupButton("Log In", NULL);
+    window = gtk_application_window_new(app);
+    gtk_window_set_title(GTK_WINDOW(window), "RDS 4.0");
+    gtk_window_set_default_size(GTK_WINDOW(window), 450, 350);
 
-    IupSetCallback(submit, "ACTION", (Icallback)on_submit);
+    scroll_window = gtk_scrolled_window_new();
 
-    IupSetAttribute(login_option, "SIZE", "50x18");
-    IupSetAttribute(user_id, "SIZE", "80");
-    IupSetAttribute(user_passwd, "SIZE", "80");
+    stack = gtk_stack_new();
+    gtk_widget_set_halign(stack, GTK_ALIGN_CENTER);
+    gtk_widget_set_valign(stack, GTK_ALIGN_CENTER);
 
-    IupSetAttribute(login_option, "1", "Student");
-    IupSetAttribute(login_option, "2", "Teacher");
-    IupSetAttribute(login_option, "DROPDOWN", "NO");
-    IupSetCallback(login_option, "ACTION", (Icallback)on_select_login_option);
+    // Create the pages
+    login_page = f_login_page();
+    admin_launch_page = f_admin_launch_page();
+    student_launch_page = f_student_launch_page();
+    teacher_launch_page = f_teacher_launch_page();
 
-    container = IupVbox(
-        IupHbox(IupLabel("Login as     :  "), login_option, NULL),
-        IupHbox(IupLabel("ID               :  "), user_id, NULL),
-        IupHbox(IupLabel("Password  :  "), user_passwd, NULL),
-        submit,
-        NULL);
+    // Add the pages to the stack
+    gtk_stack_add_named(GTK_STACK(stack), login_page, "login-page");
+    gtk_stack_add_named(GTK_STACK(stack), admin_launch_page, "admin-launch-page");
+    gtk_stack_add_named(GTK_STACK(stack), student_launch_page, "student-launch-page");
+    gtk_stack_add_named(GTK_STACK(stack), teacher_launch_page, "teacher-launch-page");
 
-    IupSetAttribute(container, "MARGIN", "10x3");
+    // Set the initial page
+    gtk_stack_set_visible_child_name(GTK_STACK(stack), "login-page");
 
-    launch_window = IupDialog(container);
+    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scroll_window), stack);
+    gtk_window_set_child(GTK_WINDOW(window), scroll_window);
+    gtk_window_present(GTK_WINDOW(window));
 
-    IupSetAttribute(launch_window, "TITLE", "Log In");
-    IupSetAttribute(launch_window, "SIZE", "200x100");
-    IupSetAttribute(launch_window, "FONT", "Arial, 11");
-
-    return launch_window;
+    // g_object_unref(css_all);
 }
